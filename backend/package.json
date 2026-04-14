@@ -1,0 +1,27 @@
+{
+    "name": "employee-api",
+    "version": "1.0.0",
+    "main": "dist/server.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/server.js",
+        "dev": "ts-node src/server.ts",
+        "verify": "ts-node verify_setup.ts"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "morgan": "^1.10.0",
+        "node-fetch": "^2.7.0"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.19",
+        "@types/express": "^4.17.25",
+        "@types/morgan": "^1.9.10",
+        "@types/node": "^20.19.30",
+        "@types/node-fetch": "^2.6.13",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3"
+    }
+}
