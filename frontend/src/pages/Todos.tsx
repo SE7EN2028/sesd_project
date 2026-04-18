@@ -74,52 +74,68 @@ export default function Todos() {
         load();
     };
 
-    const priorityColor = (p: string) => {
-        if (p === 'high') return '#ef4444';
-        if (p === 'medium') return '#f59e0b';
-        return '#10b981';
+    const isOverdue = (dueDate: string) => {
+        return dueDate && new Date(dueDate) < new Date() ;
     };
+
+    const completedCount = todos.filter(t => t.completed).length;
 
     return (
         <div>
             <div className="page-header">
-                <h2>Todos</h2>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <select value={filter.type} onChange={e => setFilter(f => ({ ...f, type: e.target.value }))}
-                        style={{ padding: '0.4rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                        <option value="">All Types</option>
-                        <option value="personal">Personal</option>
-                        <option value="work">Work</option>
-                        <option value="urgent">Urgent</option>
-                    </select>
-                    <select value={filter.completed} onChange={e => setFilter(f => ({ ...f, completed: e.target.value }))}
-                        style={{ padding: '0.4rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                        <option value="">All Status</option>
-                        <option value="false">Pending</option>
-                        <option value="true">Completed</option>
-                    </select>
-                    <select value={filter.sort} onChange={e => setFilter(f => ({ ...f, sort: e.target.value }))}
-                        style={{ padding: '0.4rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                        <option value="">Default Sort</option>
-                        <option value="date">By Due Date</option>
-                        <option value="priority">By Priority</option>
-                        <option value="created">By Created</option>
-                    </select>
-                    <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Todo</button>
+                <div>
+                    <h1 className="page-title">My Todos</h1>
+                    <p className="page-subtitle">
+                        {todos.length > 0
+                            ? `${completedCount} of ${todos.length} tasks completed`
+                            : 'Manage and organize your tasks'}
+                    </p>
                 </div>
+                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                    + New Task
+                </button>
+            </div>
+
+            <div className="filter-bar" style={{ marginBottom: '1.5rem' }}>
+                <select className="filter-select" value={filter.type} onChange={e => setFilter(f => ({ ...f, type: e.target.value }))}>
+                    <option value="">All Types</option>
+                    <option value="personal">Personal</option>
+                    <option value="work">Work</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+                <select className="filter-select" value={filter.completed} onChange={e => setFilter(f => ({ ...f, completed: e.target.value }))}>
+                    <option value="">All Status</option>
+                    <option value="false">Pending</option>
+                    <option value="true">Completed</option>
+                </select>
+                <select className="filter-select" value={filter.sort} onChange={e => setFilter(f => ({ ...f, sort: e.target.value }))}>
+                    <option value="">Default Sort</option>
+                    <option value="date">By Due Date</option>
+                    <option value="priority">By Priority</option>
+                    <option value="created">By Created</option>
+                </select>
             </div>
 
             {loading ? (
-                <div className="loading">Loading...</div>
+                <div className="loading">Loading tasks...</div>
             ) : todos.length === 0 ? (
-                <div className="empty">No todos found.</div>
+                <div className="empty-state">
+                    <div className="empty-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <h3>No tasks found</h3>
+                    <p>Create a new task or adjust your filters</p>
+                    <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Create Task</button>
+                </div>
             ) : (
                 <div className="todo-list">
                     {todos.map(todo => (
-                        <div key={todo.id} className={`todo-item ${todo.completed ? 'todo-done' : ''}`}>
+                        <div key={todo.id} className={`todo-item priority-${todo.priority} ${todo.completed ? 'todo-done' : ''}`}>
                             <div className="todo-check" onClick={() => handleToggle(todo.id)}>
                                 <div className={`checkbox ${todo.completed ? 'checked' : ''}`}>
-                                    {todo.completed && '✓'}
+                                    {todo.completed && '\u2713'}
                                 </div>
                             </div>
                             <div className="todo-content">
@@ -127,16 +143,19 @@ export default function Todos() {
                                 {todo.description && <div className="todo-desc">{todo.description}</div>}
                                 <div className="todo-meta">
                                     <span className={`badge badge-${todo.type}`}>{todo.type}</span>
-                                    <span className="badge" style={{ background: priorityColor(todo.priority) + '20', color: priorityColor(todo.priority) }}>
-                                        {todo.priority}
-                                    </span>
                                     <span className="todo-label">{todo.label}</span>
                                     {todo.dueDate && (
-                                        <span className="todo-due">Due: {new Date(todo.dueDate).toLocaleDateString()}</span>
+                                        <span className={`todo-due ${isOverdue(todo.dueDate) && !todo.completed ? 'overdue' : ''}`}>
+                                            Due: {new Date(todo.dueDate).toLocaleDateString()}
+                                        </span>
                                     )}
                                 </div>
                             </div>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(todo.id)}>Delete</button>
+                            <div className="todo-actions">
+                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(todo.id)}>
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -145,27 +164,41 @@ export default function Todos() {
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
-                        <h3>Add New Todo</h3>
+                        <h3>Create New Task</h3>
+                        <p className="modal-desc">Add a new task to your list</p>
                         {error && <div className="error-msg">{error}</div>}
-                        <div className="form-group">
-                            <label>Type</label>
-                            <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
-                                <option value="personal">Personal</option>
-                                <option value="work">Work</option>
-                                <option value="urgent">Urgent</option>
-                            </select>
+
+                        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', display: 'block' }}>
+                            Task Type
+                        </label>
+                        <div className="type-selector">
+                            {[
+                                { value: 'personal', label: 'Personal' },
+                                { value: 'work', label: 'Work' },
+                                { value: 'urgent', label: 'Urgent' },
+                            ].map(t => (
+                                <div key={t.value}
+                                    className={`type-option ${form.type === t.value ? 'selected' : ''}`}
+                                    onClick={() => setForm(f => ({ ...f, type: t.value }))}>
+                                    {t.label}
+                                </div>
+                            ))}
                         </div>
+
                         <div className="form-group">
                             <label>Title</label>
-                            <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+                            <input placeholder="What needs to be done?" value={form.title}
+                                onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
                         </div>
                         <div className="form-group">
                             <label>Description</label>
-                            <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                            <input placeholder="Add details (optional)" value={form.description}
+                                onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
                         </div>
                         <div className="form-group">
                             <label>Due Date</label>
-                            <input type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+                            <input type="date" value={form.dueDate}
+                                onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
                         </div>
 
                         {form.type === 'personal' && (
@@ -181,16 +214,18 @@ export default function Todos() {
                         )}
 
                         {form.type === 'work' && (
-                            <>
+                            <div className="form-row">
                                 <div className="form-group">
                                     <label>Project</label>
-                                    <input value={form.project} onChange={e => setForm(f => ({ ...f, project: e.target.value }))} />
+                                    <input placeholder="Project name" value={form.project}
+                                        onChange={e => setForm(f => ({ ...f, project: e.target.value }))} />
                                 </div>
                                 <div className="form-group">
                                     <label>Assignee</label>
-                                    <input value={form.assignee} onChange={e => setForm(f => ({ ...f, assignee: e.target.value }))} />
+                                    <input placeholder="Assigned to" value={form.assignee}
+                                        onChange={e => setForm(f => ({ ...f, assignee: e.target.value }))} />
                                 </div>
-                            </>
+                            </div>
                         )}
 
                         {form.type === 'urgent' && (
@@ -202,8 +237,8 @@ export default function Todos() {
                         )}
 
                         <div className="form-actions">
-                            <button className="btn" onClick={() => setShowModal(false)}>Cancel</button>
-                            <button className="btn btn-primary" onClick={handleSubmit}>Create</button>
+                            <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
+                            <button className="btn btn-primary" onClick={handleSubmit}>Create Task</button>
                         </div>
                     </div>
                 </div>
