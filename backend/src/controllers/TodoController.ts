@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import todoService from '../services/TodoService';
+import todoRepository from '../repositries/TodoRepository';
 import { SortByDateStrategy, SortByPriorityStrategy, SortByCreatedStrategy } from '../strategies/SortStrategy';
+import { JsonExporter, CsvExporter } from '../templates/TodoExporter';
+import { FullDecorator } from '../decorators/TodoDecorator';
 
 class TodoController {
     async create(req: Request, res: Response, next: NextFunction) {
@@ -48,6 +51,17 @@ class TodoController {
         }
     }
 
+    async getOneDecorated(req: Request, res: Response, next: NextFunction) {
+        try {
+            const todo = await todoRepository.findById(Number(req.params.id));
+            if (!todo) { res.status(404).json({ status: 'fail', message: 'Todo not found' }); return; }
+            const decorated = new FullDecorator(todo).decorate();
+            res.json({ status: 'success', data: decorated });
+        } catch (err) {
+            next(err);
+        }
+    }
+
     async update(req: Request, res: Response, next: NextFunction) {
         try {
             const data = await todoService.update(Number(req.params.id), req.body);
@@ -79,6 +93,22 @@ class TodoController {
         try {
             const data = await todoService.getStats();
             res.json({ status: 'success', data });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async exportTodos(req: Request, res: Response, next: NextFunction) {
+        try {
+            const format = req.query.format as string || 'json';
+            const todos = await todoRepository.findAll();
+
+            const exporter = format === 'csv' ? new CsvExporter() : new JsonExporter();
+            const content = exporter.export(todos);
+
+            res.setHeader('Content-Type', exporter.getContentType());
+            res.setHeader('Content-Disposition', `attachment; filename=todos.${exporter.getFileExtension()}`);
+            res.send(content);
         } catch (err) {
             next(err);
         }

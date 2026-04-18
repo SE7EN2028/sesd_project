@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes';
 import todoRoutes from './routes/todoRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
+import subTaskRoutes from './routes/subTaskRoutes';
 import { authenticate } from './middlewares/authMiddleware';
 
 const app = express();
@@ -19,6 +20,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/todos', authenticate, todoRoutes);
 app.use('/api/v1/categories', authenticate, categoryRoutes);
 app.use('/api/v1/dashboard', authenticate, dashboardRoutes);
+app.use('/api/v1/subtasks', authenticate, subTaskRoutes);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
     next(new AppError(`Not Found - ${req.originalUrl}`, 404));

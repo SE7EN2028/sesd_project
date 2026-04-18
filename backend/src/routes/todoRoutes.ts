@@ -5,9 +5,11 @@ import { validateTodoCreate, validateTodoUpdate } from '../middlewares/validatio
 const router = Router();
 
 router.get('/stats', ctrl.getStats);
+router.get('/export', ctrl.exportTodos);
 router.get('/', ctrl.getAll);
 router.post('/', validateTodoCreate, ctrl.create);
 router.get('/:id', ctrl.getOne);
+router.get('/:id/detailed', ctrl.getOneDecorated);
 router.patch('/:id', validateTodoUpdate, ctrl.update);
 router.patch('/:id/toggle', ctrl.toggle);
 router.delete('/:id', ctrl.delete);
