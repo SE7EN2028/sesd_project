@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
 export default function Signup() {
@@ -23,38 +24,25 @@ export default function Signup() {
 
     return (
         <div className="auth-page">
-            <div className="auth-card">
+            <motion.div className="auth-card" initial={{ opacity: 0, y: 30, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}>
                 <div className="auth-header">
-                    <div className="auth-logo">
+                    <motion.div className="auth-logo" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 15, delay: 0.1 }}>
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                    </div>
-                    <h1>Create account</h1>
-                    <p>Get started with Taskflow</p>
+                    </motion.div>
+                    <h1>Create account</h1><p>Get started with Taskflow</p>
                 </div>
-                {error && <div className="error-msg">{error}</div>}
+                {error && <motion.div className="error-msg" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}>{error}</motion.div>}
                 <form onSubmit={submit}>
-                    <div className="form-group">
-                        <label className="form-label">Full Name</label>
-                        <input className="form-input" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} required />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">Email</label>
-                        <input className="form-input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">Password</label>
-                        <input className="form-input" type="password" placeholder="Min. 6 characters" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">Confirm Password</label>
-                        <input className="form-input" type="password" placeholder="Repeat password" value={confirm} onChange={e => setConfirm(e.target.value)} required />
-                    </div>
-                    <button type="submit" className="btn btn-primary auth-submit" disabled={busy}>{busy ? 'Creating account...' : 'Create Account'}</button>
+                    <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} required /></div>
+                    <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required /></div>
+                    <div className="form-group"><label className="form-label">Password</label><input className="form-input" type="password" placeholder="Min. 6 characters" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} /></div>
+                    <div className="form-group"><label className="form-label">Confirm Password</label><input className="form-input" type="password" placeholder="Repeat password" value={confirm} onChange={e => setConfirm(e.target.value)} required /></div>
+                    <motion.button type="submit" className="btn btn-primary auth-submit" disabled={busy} whileHover={busy ? {} : { scale: 1.01 }} whileTap={busy ? {} : { scale: 0.98 }}>{busy ? 'Creating account...' : 'Create Account'}</motion.button>
                 </form>
                 <div className="auth-footer">Already have an account? <Link to="/login">Sign in</Link></div>
-            </div>
+            </motion.div>
         </div>
     );
 }

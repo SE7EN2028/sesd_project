@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import Dashboard from './pages/Dashboard';
 import Todos from './pages/Todos';
 import Categories from './pages/Categories';
@@ -10,7 +11,7 @@ import './index.css';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading"><div className="spinner" /></div>;
     if (!user) return <Navigate to="/login" />;
     return <>{children}</>;
 }
@@ -28,25 +29,30 @@ function Sidebar() {
 
     return (
         <aside className="sidebar">
-            <div className="sidebar-brand">
+            <motion.div className="sidebar-brand" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
                 <div className="brand-icon">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                 </div>
                 <span className="brand-text">Taskflow</span>
-            </div>
+            </motion.div>
 
             <div className="sidebar-section-label">Menu</div>
 
             <nav className="sidebar-nav">
-                {links.map(l => (
-                    <Link key={l.to} to={l.to} className={`nav-item ${location.pathname === l.to ? 'active' : ''}`}>
-                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d={l.icon} />
-                        </svg>
-                        <span>{l.label}</span>
-                    </Link>
+                {links.map((l, i) => (
+                    <motion.div key={l.to} initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.05 }}>
+                        <Link to={l.to} className={`nav-item ${location.pathname === l.to ? 'active' : ''}`}>
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d={l.icon} />
+                            </svg>
+                            <span>{l.label}</span>
+                            {location.pathname === l.to && (
+                                <motion.div className="nav-indicator" layoutId="nav-indicator" transition={{ type: 'spring', stiffness: 350, damping: 30 }} />
+                            )}
+                        </Link>
+                    </motion.div>
                 ))}
             </nav>
 
@@ -59,42 +65,55 @@ function Sidebar() {
                     </div>
                 </div>
                 <div className="sidebar-actions">
-                    <button className="btn-icon" onClick={toggleTheme} title={theme === 'light' ? 'Dark mode' : 'Light mode'}>
-                        {theme === 'light' ? (
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-                            </svg>
-                        ) : (
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="5" />
-                                <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
-                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                                <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
-                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                            </svg>
-                        )}
-                    </button>
-                    <button className="btn-icon danger" onClick={logout} title="Sign out">
+                    <motion.button className="btn-icon" onClick={toggleTheme} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} title={theme === 'light' ? 'Dark mode' : 'Light mode'}>
+                        <AnimatePresence mode="wait">
+                            {theme === 'light' ? (
+                                <motion.svg key="moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                                </motion.svg>
+                            ) : (
+                                <motion.svg key="sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                    <circle cx="12" cy="12" r="5" />
+                                    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                                    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                                </motion.svg>
+                            )}
+                        </AnimatePresence>
+                    </motion.button>
+                    <motion.button className="btn-icon danger" onClick={logout} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} title="Sign out">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
                         </svg>
-                    </button>
+                    </motion.button>
                 </div>
             </div>
         </aside>
     );
 }
 
+function AnimatedPage({ children }: { children: React.ReactNode }) {
+    return (
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: 'easeOut' }}>
+            {children}
+        </motion.div>
+    );
+}
+
 function AppLayout() {
+    const location = useLocation();
     return (
         <div className="app-layout">
             <Sidebar />
             <main className="main-content">
-                <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/todos" element={<Todos />} />
-                    <Route path="/categories" element={<Categories />} />
-                </Routes>
+                <AnimatePresence mode="wait">
+                    <Routes location={location} key={location.pathname}>
+                        <Route path="/" element={<AnimatedPage><Dashboard /></AnimatedPage>} />
+                        <Route path="/todos" element={<AnimatedPage><Todos /></AnimatedPage>} />
+                        <Route path="/categories" element={<AnimatedPage><Categories /></AnimatedPage>} />
+                    </Routes>
+                </AnimatePresence>
             </main>
         </div>
     );
@@ -102,15 +121,13 @@ function AppLayout() {
 
 function AppRoutes() {
     const { user, loading } = useAuth();
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading"><div className="spinner" /></div>;
 
     return (
         <Routes>
             <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
             <Route path="/signup" element={user ? <Navigate to="/" /> : <Signup />} />
-            <Route path="/*" element={
-                <ProtectedRoute><AppLayout /></ProtectedRoute>
-            } />
+            <Route path="/*" element={<ProtectedRoute><AppLayout /></ProtectedRoute>} />
         </Routes>
     );
 }

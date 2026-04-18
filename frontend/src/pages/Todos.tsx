@@ -1,15 +1,10 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { todoApi } from '../services/api';
 
 interface TodoForm {
-    title: string;
-    description: string;
-    type: string;
-    dueDate: string;
-    tag: string;
-    project: string;
-    assignee: string;
-    escalationLevel: number;
+    title: string; description: string; type: string; dueDate: string;
+    tag: string; project: string; assignee: string; escalationLevel: number;
 }
 
 const blank: TodoForm = {
@@ -55,132 +50,121 @@ export default function Todos() {
 
     return (
         <div>
-            <div className="page-header">
+            <motion.div className="page-header" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
                 <div>
                     <h1 className="page-title">My Todos</h1>
                     <p className="page-subtitle">{todos.length > 0 ? `${done} of ${todos.length} completed` : 'Manage your tasks'}</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => setModal(true)}>+ New Task</button>
-            </div>
+                <motion.button className="btn btn-primary" onClick={() => setModal(true)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>+ New Task</motion.button>
+            </motion.div>
 
             <div className="filter-bar" style={{ marginBottom: '1.25rem' }}>
                 <select className="filter-pill" value={filter.type} onChange={e => setFilter(f => ({ ...f, type: e.target.value }))}>
-                    <option value="">All Types</option>
-                    <option value="personal">Personal</option>
-                    <option value="work">Work</option>
-                    <option value="urgent">Urgent</option>
+                    <option value="">All Types</option><option value="personal">Personal</option><option value="work">Work</option><option value="urgent">Urgent</option>
                 </select>
                 <select className="filter-pill" value={filter.completed} onChange={e => setFilter(f => ({ ...f, completed: e.target.value }))}>
-                    <option value="">All Status</option>
-                    <option value="false">Pending</option>
-                    <option value="true">Done</option>
+                    <option value="">All Status</option><option value="false">Pending</option><option value="true">Done</option>
                 </select>
                 <select className="filter-pill" value={filter.sort} onChange={e => setFilter(f => ({ ...f, sort: e.target.value }))}>
-                    <option value="">Sort</option>
-                    <option value="date">Due Date</option>
-                    <option value="priority">Priority</option>
-                    <option value="created">Newest</option>
+                    <option value="">Sort</option><option value="date">Due Date</option><option value="priority">Priority</option><option value="created">Newest</option>
                 </select>
             </div>
 
-            {loading ? <div className="loading">Loading...</div> : todos.length === 0 ? (
-                <div className="empty-state">
-                    <div className="empty-visual">
-                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                    </div>
-                    <h3>No tasks found</h3>
-                    <p>Create a task or change your filters to see results</p>
-                    <button className="btn btn-primary" onClick={() => setModal(true)}>+ Create Task</button>
-                </div>
+            {loading ? <div className="loading"><div className="spinner" /></div> : todos.length === 0 ? (
+                <motion.div className="empty-state" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+                    <div className="empty-visual"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg></div>
+                    <h3>No tasks found</h3><p>Create a task or change your filters to see results</p>
+                    <motion.button className="btn btn-primary" onClick={() => setModal(true)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>+ Create Task</motion.button>
+                </motion.div>
             ) : (
                 <div className="todo-list">
-                    {todos.map(t => (
-                        <div key={t.id} className={`todo-item ${t.completed ? 'todo-done' : ''}`}>
-                            <div className={`prio-stripe ${t.priority}`} />
-                            <div className="todo-check" onClick={() => toggle(t.id)}>
-                                <div className={`checkbox ${t.completed ? 'checked' : ''}`}>{t.completed && '\u2713'}</div>
-                            </div>
-                            <div className="todo-body">
-                                <div className="todo-title">{t.title}</div>
-                                {t.description && <div className="todo-desc">{t.description}</div>}
-                                <div className="todo-tags">
-                                    <span className={`badge badge-${t.type}`}>{t.type}</span>
-                                    <span className="todo-label">{t.label}</span>
-                                    {t.dueDate && <span className={`todo-due ${overdue(t.dueDate) && !t.completed ? 'overdue' : ''}`}>Due {new Date(t.dueDate).toLocaleDateString()}</span>}
+                    <AnimatePresence>
+                        {todos.map((t, i) => (
+                            <motion.div key={t.id} className={`todo-item ${t.completed ? 'todo-done' : ''}`}
+                                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0, padding: 0 }}
+                                transition={{ duration: 0.25, delay: i * 0.03 }}
+                                layout>
+                                <div className={`prio-stripe ${t.priority}`} />
+                                <div className="todo-check" onClick={() => toggle(t.id)}>
+                                    <motion.div className={`checkbox ${t.completed ? 'checked' : ''}`} whileTap={{ scale: 0.8 }}>
+                                        <AnimatePresence>
+                                            {t.completed && (
+                                                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 15 }}>
+                                                    {'\u2713'}
+                                                </motion.span>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
                                 </div>
-                            </div>
-                            <div className="todo-end">
-                                <button className="btn-danger-subtle btn-sm" onClick={() => remove(t.id)}>Delete</button>
-                            </div>
-                        </div>
-                    ))}
+                                <div className="todo-body">
+                                    <div className="todo-title">{t.title}</div>
+                                    {t.description && <div className="todo-desc">{t.description}</div>}
+                                    <div className="todo-tags">
+                                        <span className={`badge badge-${t.type}`}>{t.type}</span>
+                                        <span className="todo-label">{t.label}</span>
+                                        {t.dueDate && <span className={`todo-due ${overdue(t.dueDate) && !t.completed ? 'overdue' : ''}`}>Due {new Date(t.dueDate).toLocaleDateString()}</span>}
+                                    </div>
+                                </div>
+                                <div className="todo-end">
+                                    <motion.button className="btn-danger-subtle btn-sm" onClick={() => remove(t.id)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Delete</motion.button>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
             )}
 
-            {modal && (
-                <div className="modal-overlay" onClick={() => setModal(false)}>
-                    <div className="modal" onClick={e => e.stopPropagation()}>
-                        <div className="modal-title">Create New Task</div>
-                        <div className="modal-desc">Add a task to your list</div>
-                        {error && <div className="error-msg">{error}</div>}
+            <AnimatePresence>
+                {modal && (
+                    <motion.div className="modal-overlay" onClick={() => setModal(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                        <motion.div className="modal" onClick={e => e.stopPropagation()} initial={{ opacity: 0, y: 30, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.95 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }}>
+                            <div className="modal-title">Create New Task</div>
+                            <div className="modal-desc">Add a task to your list</div>
+                            {error && <div className="error-msg">{error}</div>}
 
-                        <div className="form-label">Type</div>
-                        <div className="type-cards">
-                            {['personal', 'work', 'urgent'].map(v => (
-                                <div key={v} className={`type-card ${form.type === v ? 'picked' : ''}`} onClick={() => setForm(f => ({ ...f, type: v }))}>{v.charAt(0).toUpperCase() + v.slice(1)}</div>
-                            ))}
-                        </div>
-
-                        <div className="form-group">
-                            <label className="form-label">Title</label>
-                            <input className="form-input" placeholder="What needs to be done?" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Description</label>
-                            <input className="form-input" placeholder="Add details (optional)" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Due Date</label>
-                            <input className="form-input" type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
-                        </div>
-
-                        {form.type === 'personal' && (
-                            <div className="form-group">
-                                <label className="form-label">Tag</label>
-                                <select className="form-input" value={form.tag} onChange={e => setForm(f => ({ ...f, tag: e.target.value }))}>
-                                    <option value="general">General</option><option value="health">Health</option>
-                                    <option value="finance">Finance</option><option value="hobby">Hobby</option>
-                                </select>
+                            <div className="form-label">Type</div>
+                            <div className="type-cards">
+                                {['personal', 'work', 'urgent'].map(v => (
+                                    <motion.div key={v} className={`type-card ${form.type === v ? 'picked' : ''}`} onClick={() => setForm(f => ({ ...f, type: v }))} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                                        {v.charAt(0).toUpperCase() + v.slice(1)}
+                                    </motion.div>
+                                ))}
                             </div>
-                        )}
 
-                        {form.type === 'work' && (
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label className="form-label">Project</label>
-                                    <input className="form-input" placeholder="Project name" value={form.project} onChange={e => setForm(f => ({ ...f, project: e.target.value }))} />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Assignee</label>
-                                    <input className="form-input" placeholder="Assigned to" value={form.assignee} onChange={e => setForm(f => ({ ...f, assignee: e.target.value }))} />
-                                </div>
+                            <div className="form-group"><label className="form-label">Title</label><input className="form-input" placeholder="What needs to be done?" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} /></div>
+                            <div className="form-group"><label className="form-label">Description</label><input className="form-input" placeholder="Add details (optional)" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+                            <div className="form-group"><label className="form-label">Due Date</label><input className="form-input" type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} /></div>
+
+                            {form.type === 'personal' && (
+                                <motion.div className="form-group" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                                    <label className="form-label">Tag</label>
+                                    <select className="form-input" value={form.tag} onChange={e => setForm(f => ({ ...f, tag: e.target.value }))}><option value="general">General</option><option value="health">Health</option><option value="finance">Finance</option><option value="hobby">Hobby</option></select>
+                                </motion.div>
+                            )}
+
+                            {form.type === 'work' && (
+                                <motion.div className="form-row" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                                    <div className="form-group"><label className="form-label">Project</label><input className="form-input" placeholder="Project name" value={form.project} onChange={e => setForm(f => ({ ...f, project: e.target.value }))} /></div>
+                                    <div className="form-group"><label className="form-label">Assignee</label><input className="form-input" placeholder="Assigned to" value={form.assignee} onChange={e => setForm(f => ({ ...f, assignee: e.target.value }))} /></div>
+                                </motion.div>
+                            )}
+
+                            {form.type === 'urgent' && (
+                                <motion.div className="form-group" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                                    <label className="form-label">Escalation Level (1-5)</label>
+                                    <input className="form-input" type="number" min="1" max="5" value={form.escalationLevel} onChange={e => setForm(f => ({ ...f, escalationLevel: Number(e.target.value) }))} />
+                                </motion.div>
+                            )}
+
+                            <div className="form-actions">
+                                <button className="btn btn-ghost" onClick={() => setModal(false)}>Cancel</button>
+                                <motion.button className="btn btn-primary" onClick={submit} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>Create Task</motion.button>
                             </div>
-                        )}
-
-                        {form.type === 'urgent' && (
-                            <div className="form-group">
-                                <label className="form-label">Escalation Level (1-5)</label>
-                                <input className="form-input" type="number" min="1" max="5" value={form.escalationLevel} onChange={e => setForm(f => ({ ...f, escalationLevel: Number(e.target.value) }))} />
-                            </div>
-                        )}
-
-                        <div className="form-actions">
-                            <button className="btn btn-ghost" onClick={() => setModal(false)}>Cancel</button>
-                            <button className="btn btn-primary" onClick={submit}>Create Task</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
