@@ -18,14 +18,16 @@ class TodoService {
         });
 
         await todoRepository.save(todo);
-        this.eventManager.emit('todo:created', todo.toJSON());
+        this.eventManager.emit('todo:created', { title: todo.title, type: todo.type });
         return todo.toJSON();
     }
 
     async findAll(query: any = {}): Promise<Record<string, unknown>[]> {
         let todos;
 
-        if (query.type) {
+        if (query.search) {
+            todos = await todoRepository.search(query.search);
+        } else if (query.type) {
             todos = await todoRepository.findByType(query.type);
         } else if (query.completed === 'true') {
             todos = await todoRepository.findCompleted();
@@ -43,7 +45,9 @@ class TodoService {
     async findAllSorted(strategy: SortStrategy, query: any = {}): Promise<Record<string, unknown>[]> {
         let todos;
 
-        if (query.type) {
+        if (query.search) {
+            todos = await todoRepository.search(query.search);
+        } else if (query.type) {
             todos = await todoRepository.findByType(query.type);
         } else {
             todos = await todoRepository.findAll();
@@ -68,7 +72,7 @@ class TodoService {
             if (data.categoryId !== undefined) todo.categoryId = data.categoryId;
         });
         if (!updated) throw new AppError('Todo not found', 404);
-        this.eventManager.emit('todo:updated', updated.toJSON());
+        this.eventManager.emit('todo:updated', { title: updated.title });
         return updated.toJSON();
     }
 
@@ -80,15 +84,16 @@ class TodoService {
             t.completed = !t.completed;
         });
 
-        this.eventManager.emit('todo:toggled', updated!.toJSON());
+        this.eventManager.emit(updated!.completed ? 'todo:completed' : 'todo:reopened', { title: updated!.title });
         return updated!.toJSON();
     }
 
     async delete(id: number): Promise<boolean> {
         const todo = await todoRepository.findById(id);
         if (!todo) throw new AppError('Todo not found', 404);
+        const title = todo.title;
         const result = await todoRepository.delete(id);
-        this.eventManager.emit('todo:deleted', { id });
+        this.eventManager.emit('todo:deleted', { title });
         return result;
     }
 
@@ -96,6 +101,8 @@ class TodoService {
         const all = await todoRepository.findAll();
         const completed = all.filter(t => t.completed).length;
         const pending = all.length - completed;
+        const overdue = (await todoRepository.findOverdue()).length;
+        const dueToday = (await todoRepository.findDueToday()).length;
         const byType: Record<string, number> = {};
         const byPriority: Record<string, number> = {};
 
@@ -104,7 +111,7 @@ class TodoService {
             byPriority[t.getPriority()] = (byPriority[t.getPriority()] || 0) + 1;
         });
 
-        return { total: all.length, completed, pending, byType, byPriority };
+        return { total: all.length, completed, pending, overdue, dueToday, byType, byPriority };
     }
 }
 

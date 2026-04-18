@@ -22,4 +22,8 @@ export const categoryApi = {
     delete: (id: number) => api.delete(`/categories/${id}`),
 };
 
+export const dashboardApi = {
+    getOverview: () => api.get('/dashboard/overview'),
+};
+
 export default api;
