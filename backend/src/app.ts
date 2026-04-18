@@ -2,8 +2,10 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import { AppError } from './utils/AppError';
+import authRoutes from './routes/authRoutes';
 import todoRoutes from './routes/todoRoutes';
 import categoryRoutes from './routes/categoryRoutes';
+import { authenticate } from './middlewares/authMiddleware';
 
 const app = express();
 
@@ -11,8 +13,10 @@ app.use(cors());
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 app.use(express.json());
 
-app.use('/api/v1/todos', todoRoutes);
-app.use('/api/v1/categories', categoryRoutes);
+app.use('/api/v1/auth', authRoutes);
+
+app.use('/api/v1/todos', authenticate, todoRoutes);
+app.use('/api/v1/categories', authenticate, categoryRoutes);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
     next(new AppError(`Not Found - ${req.originalUrl}`, 404));
